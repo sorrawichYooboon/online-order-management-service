@@ -1,4 +1,4 @@
-package database
+package postgres
 
 import "github.com/sorrawichYooboon/online-order-management-service/internal/repository"
 

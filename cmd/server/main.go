@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/sorrawichYooboon/online-order-management-service/config"
-	"github.com/sorrawichYooboon/online-order-management-service/internal/infrastructure/database"
+	"github.com/sorrawichYooboon/online-order-management-service/internal/infrastructure/database/postgres"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/infrastructure/delivery/rest"
 	"github.com/sorrawichYooboon/online-order-management-service/migrations"
 )
@@ -20,11 +20,11 @@ func main() {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
-	db := database.Connect(cfg)
+	pg := postgres.Connect(cfg)
 	migrations.RunMigrations(cfg)
-	defer db.Close(context.Background())
+	defer pg.Close(context.Background())
 
-	e := rest.NewServer(cfg, db)
+	e := rest.NewServer(cfg, pg)
 
 	go func() {
 		if err := e.Start(":8080"); err != nil {
