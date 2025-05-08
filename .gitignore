@@ -1,0 +1,40 @@
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Build output
+bin/
+*.out
+
+# Temporary files
+*.log
+*.tmp
+
+# Dependency directories (used by vendoring)
+vendor/
+
+# Go modules
+go.sum
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Testing and debugging files
+*.test
+
+# Coverage files
+coverage.out
+*.cov
+
+# Configuration override files
+.env
+*.local
