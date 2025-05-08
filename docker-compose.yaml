@@ -5,9 +5,9 @@ services:
     image: postgres:17
     container_name: online-order-management-pg
     environment:
-      POSTGRES_USER: oom_user_LQkR
-      POSTGRES_PASSWORD: r9VYUDHXxRk
-      POSTGRES_DB: oom_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DBNAME}
     ports:
       - "5432:5432"
     volumes:

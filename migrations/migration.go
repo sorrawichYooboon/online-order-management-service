@@ -12,7 +12,7 @@ import (
 
 func RunMigrations(cfg *config.Config) {
 	dbPath := "file://./migrations"
-	databaseURL := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", cfg.DatabaseUser, cfg.DatabasePassword, cfg.DatabaseHost, cfg.DatabasePort, cfg.DatabaseDBName)
+	databaseURL := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresHost, cfg.PostgresPort, cfg.PostgresDBName)
 
 	m, err := migrate.New(dbPath, databaseURL)
 	if err != nil {

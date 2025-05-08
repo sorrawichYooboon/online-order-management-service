@@ -21,12 +21,12 @@ func main() {
 
 	databaseURL := fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s?sslmode=%s",
-		cfg.DatabaseUser,
-		cfg.DatabasePassword,
-		cfg.DatabaseHost,
-		cfg.DatabasePort,
-		cfg.DatabaseDBName,
-		cfg.DatabaseSSLMode,
+		cfg.PostgresUser,
+		cfg.PostgresPassword,
+		cfg.PostgresHost,
+		cfg.PostgresPort,
+		cfg.PostgresDBName,
+		cfg.PostgresSSLMode,
 	)
 
 	m, err := migrate.New("file://./migrations", databaseURL)

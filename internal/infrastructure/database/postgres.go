@@ -13,12 +13,12 @@ import (
 func Connect(cfg *config.Config) *pgx.Conn {
 	dsn := fmt.Sprintf(
 		"user=%s password=%s host=%s port=%d dbname=%s sslmode=%s",
-		cfg.DatabaseUser,
-		cfg.DatabasePassword,
-		cfg.DatabaseHost,
-		cfg.DatabasePort,
-		cfg.DatabaseDBName,
-		cfg.DatabaseSSLMode,
+		cfg.PostgresUser,
+		cfg.PostgresPassword,
+		cfg.PostgresHost,
+		cfg.PostgresPort,
+		cfg.PostgresDBName,
+		cfg.PostgresSSLMode,
 	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
