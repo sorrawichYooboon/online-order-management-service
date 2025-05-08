@@ -3,14 +3,14 @@ package rest
 import (
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
+
 	"github.com/sorrawichYooboon/online-order-management-service/config"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/infrastructure/delivery/rest/handler"
 )
 
-func NewServer(*config.Config, *pgx.Conn) *echo.Echo {
-	e := echo.New()
+func NewServer(e *echo.Echo, cfg *config.Config, pq *pgx.Conn, healthHandler handler.HealthHandler, orderHandler handler.OrderHandler) {
+	e.GET("/ping", healthHandler.Ping)
 
-	e.GET("/ping", handler.PingHandler)
-
-	return e
+	orders := e.Group("/orders")
+	orders.POST("", orderHandler.CreateOrder)
 }

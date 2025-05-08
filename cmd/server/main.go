@@ -8,10 +8,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/labstack/echo/v4"
 	"github.com/sorrawichYooboon/online-order-management-service/config"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/infrastructure/database/postgres"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/infrastructure/delivery/rest"
+	"github.com/sorrawichYooboon/online-order-management-service/internal/infrastructure/delivery/rest/handler"
+	"github.com/sorrawichYooboon/online-order-management-service/internal/usecase"
 	"github.com/sorrawichYooboon/online-order-management-service/migrations"
+	"github.com/sorrawichYooboon/online-order-management-service/pkg/validator"
 )
 
 func main() {
@@ -24,7 +28,20 @@ func main() {
 	migrations.RunMigrations(cfg)
 	defer pg.Close(context.Background())
 
-	e := rest.NewServer(cfg, pg)
+	e := echo.New()
+	e.Validator = validator.New()
+
+	pingHandler := handler.NewHealthHandler()
+
+	pgTxManager := postgres.NewTxManager(pg)
+	orderItemRepo := postgres.NewOrderItemRepository(pg)
+	orderRepo := postgres.NewOrderRepository(pg)
+
+	orderUsecase := usecase.NewOrderUsecase(pgTxManager, orderRepo, orderItemRepo)
+
+	orderHandler := handler.NewOrderHandler(orderUsecase)
+
+	rest.NewServer(e, cfg, pg, pingHandler, orderHandler)
 
 	go func() {
 		if err := e.Start(":8080"); err != nil {

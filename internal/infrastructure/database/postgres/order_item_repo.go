@@ -1,10 +1,33 @@
 package postgres
 
-import "github.com/sorrawichYooboon/online-order-management-service/internal/repository"
+import (
+	"context"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/sorrawichYooboon/online-order-management-service/internal/domain"
+	"github.com/sorrawichYooboon/online-order-management-service/internal/repository"
+)
 
 type OrderItemRepositoryImpl struct {
+	db *pgx.Conn
 }
 
-func NewOrderItemRepository() repository.OrderItemRepository {
-	return &OrderItemRepositoryImpl{}
+func NewOrderItemRepository(db *pgx.Conn) repository.OrderItemRepository {
+	return &OrderItemRepositoryImpl{
+		db: db,
+	}
+}
+
+func (r *OrderItemRepositoryImpl) InsertOrderItems(ctx context.Context, tx pgx.Tx, items []domain.OrderItem) error {
+	for _, item := range items {
+		_, err := tx.Exec(ctx,
+			`INSERT INTO order_items (order_id, product_name, quantity, price)
+			VALUES ($1, $2, $3, $4)`,
+			item.OrderID, item.ProductName, item.Quantity, item.Price,
+		)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
