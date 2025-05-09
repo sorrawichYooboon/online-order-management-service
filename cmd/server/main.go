@@ -16,6 +16,7 @@ import (
 	"github.com/sorrawichYooboon/online-order-management-service/internal/usecase"
 	"github.com/sorrawichYooboon/online-order-management-service/migrations"
 	"github.com/sorrawichYooboon/online-order-management-service/pkg/validator"
+	"github.com/sorrawichYooboon/online-order-management-service/pkg/workers"
 )
 
 func main() {
@@ -25,8 +26,13 @@ func main() {
 	}
 
 	pg := postgres.Connect(cfg)
+	defer pg.Close()
+
 	migrations.RunMigrations(cfg)
-	defer pg.Close(context.Background())
+
+	pool := workers.NewWorkerPool(20, 1000)
+	pool.Start()
+	defer pool.Stop()
 
 	e := echo.New()
 	e.Validator = validator.New()
@@ -37,11 +43,11 @@ func main() {
 	orderItemRepo := postgres.NewOrderItemRepository(pg)
 	orderRepo := postgres.NewOrderRepository(pg)
 
-	orderUsecase := usecase.NewOrderUsecase(pgTxManager, orderRepo, orderItemRepo)
+	orderUsecase := usecase.NewOrderUsecase(pgTxManager, orderRepo, orderItemRepo, pool)
 
 	orderHandler := handler.NewOrderHandler(orderUsecase)
 
-	rest.NewServer(e, cfg, pg, pingHandler, orderHandler)
+	rest.NewServer(e, cfg, pingHandler, orderHandler)
 
 	go func() {
 		if err := e.Start(":8080"); err != nil {

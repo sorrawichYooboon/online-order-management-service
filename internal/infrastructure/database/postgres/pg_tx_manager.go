@@ -4,19 +4,26 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/repository"
 )
 
 type PgxTxManager struct {
-	DB *pgx.Conn
+	db *pgxpool.Pool
 }
 
-func NewTxManager(db *pgx.Conn) repository.PgTxManager {
-	return &PgxTxManager{DB: db}
+func NewTxManager(db *pgxpool.Pool) repository.PgTxManager {
+	return &PgxTxManager{db: db}
 }
 
 func (t *PgxTxManager) WithTx(ctx context.Context, fn func(tx pgx.Tx) error) error {
-	tx, err := t.DB.Begin(ctx)
+	conn, err := t.db.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return err
 	}

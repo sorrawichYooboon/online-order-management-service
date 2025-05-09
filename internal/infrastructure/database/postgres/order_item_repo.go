@@ -4,15 +4,16 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/domain"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/repository"
 )
 
 type OrderItemRepositoryImpl struct {
-	db *pgx.Conn
+	db *pgxpool.Pool
 }
 
-func NewOrderItemRepository(db *pgx.Conn) repository.OrderItemRepository {
+func NewOrderItemRepository(db *pgxpool.Pool) repository.OrderItemRepository {
 	return &OrderItemRepositoryImpl{
 		db: db,
 	}
