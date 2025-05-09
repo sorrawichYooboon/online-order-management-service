@@ -29,9 +29,9 @@ func (r *OrderRepositoryImpl) GetPaginated(ctx context.Context, page int, pageSi
 	query := fmt.Sprintf(`
 		SELECT id, customer_name, status, total_amount, created_at, updated_at
 		FROM orders
-		ORDER BY created_at %s
+		ORDER BY created_at %s, id %s
 		LIMIT $1 OFFSET $2
-	`, sort)
+	`, sort, sort)
 
 	rows, err := r.db.Query(ctx, query, pageSize, offset)
 	if err != nil {
@@ -39,14 +39,47 @@ func (r *OrderRepositoryImpl) GetPaginated(ctx context.Context, page int, pageSi
 	}
 	defer rows.Close()
 
-	var orders []domain.Order
+	orderMap := make(map[int]*domain.Order)
+	var orderIDs []int
+
 	for rows.Next() {
 		var o domain.Order
 		if err := rows.Scan(&o.ID, &o.CustomerName, &o.Status, &o.TotalAmount, &o.CreatedAt, &o.UpdatedAt); err != nil {
 			return nil, err
 		}
-		orders = append(orders, o)
+		orderMap[o.ID] = &o
+		orderIDs = append(orderIDs, o.ID)
 	}
+
+	if len(orderIDs) == 0 {
+		return []domain.Order{}, nil
+	}
+
+	itemRows, err := r.db.Query(ctx, `
+		SELECT id, order_id, product_name, quantity, price
+		FROM order_items
+		WHERE order_id = ANY($1)
+	`, orderIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer itemRows.Close()
+
+	for itemRows.Next() {
+		var item domain.OrderItem
+		if err := itemRows.Scan(&item.ID, &item.OrderID, &item.ProductName, &item.Quantity, &item.Price); err != nil {
+			return nil, err
+		}
+		if order, ok := orderMap[item.OrderID]; ok {
+			order.Items = append(order.Items, item)
+		}
+	}
+
+	var orders []domain.Order
+	for _, id := range orderIDs {
+		orders = append(orders, *orderMap[id])
+	}
+
 	return orders, nil
 }
 
