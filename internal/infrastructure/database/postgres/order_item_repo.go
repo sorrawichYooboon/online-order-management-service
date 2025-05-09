@@ -19,7 +19,7 @@ func NewOrderItemRepository(db *pgxpool.Pool) repository.OrderItemRepository {
 	}
 }
 
-func (r *OrderItemRepositoryImpl) InsertOrderItems(ctx context.Context, tx pgx.Tx, items []domain.OrderItem) error {
+func (r *OrderItemRepositoryImpl) InsertBatchTx(ctx context.Context, tx pgx.Tx, items []domain.OrderItem) error {
 	batch := &pgx.Batch{}
 
 	for _, item := range items {

@@ -19,7 +19,7 @@ func NewOrderRepository(db *pgxpool.Pool) repository.OrderRepository {
 	}
 }
 
-func (r *OrderRepositoryImpl) InsertOrder(ctx context.Context, tx pgx.Tx, order *domain.Order) (int, error) {
+func (r *OrderRepositoryImpl) InsertTx(ctx context.Context, tx pgx.Tx, order *domain.Order) (int, error) {
 	var id int
 	err := tx.QueryRow(ctx,
 		`INSERT INTO orders (customer_name, total_amount, status, created_at, updated_at)

@@ -61,7 +61,7 @@ func (u *OrderUsecaseImpl) CreateOrder(ctx context.Context, orders []domain.Orde
 					}
 					order.TotalAmount = total
 
-					orderID, err := u.orderRepo.InsertOrder(localCtx, tx, &order)
+					orderID, err := u.orderRepo.InsertTx(localCtx, tx, &order)
 					if err != nil {
 						return err
 					}
@@ -70,7 +70,7 @@ func (u *OrderUsecaseImpl) CreateOrder(ctx context.Context, orders []domain.Orde
 						order.Items[i].OrderID = orderID
 					}
 
-					return u.orderItemRepo.InsertOrderItems(localCtx, tx, order.Items)
+					return u.orderItemRepo.InsertBatchTx(localCtx, tx, order.Items)
 				})
 
 				errChan <- err

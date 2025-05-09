@@ -8,5 +8,5 @@ import (
 )
 
 type OrderItemRepository interface {
-	InsertOrderItems(ctx context.Context, tx pgx.Tx, items []domain.OrderItem) error
+	InsertBatchTx(ctx context.Context, tx pgx.Tx, items []domain.OrderItem) error
 }

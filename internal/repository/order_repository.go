@@ -8,5 +8,5 @@ import (
 )
 
 type OrderRepository interface {
-	InsertOrder(ctx context.Context, tx pgx.Tx, order *domain.Order) (int, error)
+	InsertTx(ctx context.Context, tx pgx.Tx, order *domain.Order) (int, error)
 }
