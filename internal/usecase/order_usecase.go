@@ -38,6 +38,10 @@ func (u *OrderUsecaseImpl) GetOrders(ctx context.Context, page int, pageSize int
 	return u.orderRepo.GetPaginated(ctx, page, pageSize, sort)
 }
 
+func (u *OrderUsecaseImpl) GetOrderByID(ctx context.Context, id int64) (*domain.Order, error) {
+	return u.orderRepo.GetByID(ctx, id)
+}
+
 func (u *OrderUsecaseImpl) CreateOrder(ctx context.Context, orders []domain.Order) error {
 	var resultErr error
 	errChan := make(chan error, len(orders))

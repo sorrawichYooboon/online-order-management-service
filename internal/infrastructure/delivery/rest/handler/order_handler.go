@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/domain"
@@ -34,6 +35,21 @@ func (oh *OrderHandlerImpl) GetOrders(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to fetch orders"})
 	}
 	return c.JSON(http.StatusOK, orders)
+}
+
+func (oh *OrderHandlerImpl) GetOrderByID(c echo.Context) error {
+	idParam := c.Param("order_id")
+	orderID, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid order ID"})
+	}
+
+	order, err := oh.orderUsecase.GetOrderByID(c.Request().Context(), orderID)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "Order not found"})
+	}
+
+	return c.JSON(http.StatusOK, order)
 }
 
 func (oh *OrderHandlerImpl) CreateOrder(c echo.Context) error {

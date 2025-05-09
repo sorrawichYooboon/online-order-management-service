@@ -12,5 +12,6 @@ func NewServer(e *echo.Echo, cfg *config.Config, healthHandler handler.HealthHan
 
 	orders := e.Group("/orders")
 	orders.GET("", orderHandler.GetOrders)
+	orders.GET("/:order_id", orderHandler.GetOrderByID)
 	orders.POST("", orderHandler.CreateOrder)
 }

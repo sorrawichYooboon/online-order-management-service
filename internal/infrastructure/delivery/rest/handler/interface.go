@@ -8,5 +8,6 @@ type HealthHandler interface {
 
 type OrderHandler interface {
 	GetOrders(echo.Context) error
+	GetOrderByID(echo.Context) error
 	CreateOrder(echo.Context) error
 }
