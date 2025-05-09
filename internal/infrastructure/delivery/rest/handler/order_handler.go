@@ -86,3 +86,25 @@ func (oh *OrderHandlerImpl) CreateOrder(c echo.Context) error {
 	}
 	return c.JSON(http.StatusCreated, map[string]string{"message": "Order created successfully"})
 }
+
+func (oh *OrderHandlerImpl) UpdateOrderStatus(c echo.Context) error {
+	orderIDParam := c.Param("order_id")
+	orderID, err := strconv.ParseInt(orderIDParam, 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid order ID"})
+	}
+
+	var req dto.UpdateOrderStatusRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid input"})
+	}
+	if err := c.Validate(req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	}
+
+	if err := oh.orderUsecase.UpdateOrderStatus(c.Request().Context(), orderID, req.Status); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update order status"})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"message": "Order status updated successfully"})
+}

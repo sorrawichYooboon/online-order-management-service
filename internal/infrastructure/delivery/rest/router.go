@@ -14,4 +14,5 @@ func NewServer(e *echo.Echo, cfg *config.Config, healthHandler handler.HealthHan
 	orders.GET("", orderHandler.GetOrders)
 	orders.GET("/:order_id", orderHandler.GetOrderByID)
 	orders.POST("", orderHandler.CreateOrder)
+	orders.PUT("/:order_id/status", orderHandler.UpdateOrderStatus)
 }

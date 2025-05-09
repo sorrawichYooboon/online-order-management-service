@@ -17,3 +17,7 @@ type CreateOrderItemDTO struct {
 	Quantity    int     `json:"quantity" validate:"required,gt=0"`
 	Price       float64 `json:"price" validate:"required,gte=0"`
 }
+
+type UpdateOrderStatusRequest struct {
+	Status string `json:"status" validate:"required,oneof=PENDING PAID SHIPPED CANCELED"`
+}

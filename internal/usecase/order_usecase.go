@@ -95,3 +95,13 @@ func (u *OrderUsecaseImpl) CreateOrder(ctx context.Context, orders []domain.Orde
 
 	return resultErr
 }
+
+func (u *OrderUsecaseImpl) UpdateOrderStatus(ctx context.Context, orderID int64, status string) error {
+	return u.pgTxManager.WithTx(ctx, func(tx pgx.Tx) error {
+		if err := u.orderRepo.UpdateStatusTx(ctx, tx, orderID, status); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}

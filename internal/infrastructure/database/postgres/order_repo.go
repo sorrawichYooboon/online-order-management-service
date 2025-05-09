@@ -125,3 +125,11 @@ func (r *OrderRepositoryImpl) InsertTx(ctx context.Context, tx pgx.Tx, order *do
 	).Scan(&id)
 	return id, err
 }
+
+func (r *OrderRepositoryImpl) UpdateStatusTx(ctx context.Context, tx pgx.Tx, orderID int64, status string) error {
+	_, err := tx.Exec(ctx, `
+		UPDATE orders SET status = $1, updated_at = NOW()
+		WHERE id = $2
+	`, status, orderID)
+	return err
+}
