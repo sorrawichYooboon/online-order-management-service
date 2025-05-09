@@ -8,5 +8,6 @@ import (
 )
 
 type OrderRepository interface {
+	GetPaginated(ctx context.Context, page int, pageSize int, sort string) ([]domain.Order, error)
 	InsertTx(ctx context.Context, tx pgx.Tx, order *domain.Order) (int, error)
 }

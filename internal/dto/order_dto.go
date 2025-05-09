@@ -1,5 +1,11 @@
 package dto
 
+type GetOrdersRequest struct {
+	Page     int    `query:"page" validate:"min=1"`
+	PageSize int    `query:"page_size" validate:"min=1,max=100"`
+	Sort     string `query:"sort" validate:"oneof=asc desc"`
+}
+
 type CreateOrderRequest struct {
 	CustomerName string               `json:"customer_name" validate:"required"`
 	Status       string               `json:"status" validate:"required"`

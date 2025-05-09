@@ -11,5 +11,6 @@ func NewServer(e *echo.Echo, cfg *config.Config, healthHandler handler.HealthHan
 	e.GET("/ping", healthHandler.Ping)
 
 	orders := e.Group("/orders")
+	orders.GET("", orderHandler.GetOrders)
 	orders.POST("", orderHandler.CreateOrder)
 }

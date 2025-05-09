@@ -20,6 +20,22 @@ func NewOrderHandler(orderUsecase usecase.OrderUsecase) OrderHandler {
 	}
 }
 
+func (oh *OrderHandlerImpl) GetOrders(c echo.Context) error {
+	var req dto.GetOrdersRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid query params"})
+	}
+	if err := c.Validate(req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	}
+
+	orders, err := oh.orderUsecase.GetOrders(c.Request().Context(), req.Page, req.PageSize, req.Sort)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to fetch orders"})
+	}
+	return c.JSON(http.StatusOK, orders)
+}
+
 func (oh *OrderHandlerImpl) CreateOrder(c echo.Context) error {
 	var createOrderRequest []dto.CreateOrderRequest
 	if err := c.Bind(&createOrderRequest); err != nil {

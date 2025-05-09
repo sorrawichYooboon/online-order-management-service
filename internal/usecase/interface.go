@@ -7,5 +7,6 @@ import (
 )
 
 type OrderUsecase interface {
+	GetOrders(ctx context.Context, page, pageSize int, sort string) ([]domain.Order, error)
 	CreateOrder(ctx context.Context, order []domain.Order) error
 }
