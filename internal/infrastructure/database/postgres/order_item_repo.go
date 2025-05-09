@@ -20,15 +20,23 @@ func NewOrderItemRepository(db *pgxpool.Pool) repository.OrderItemRepository {
 }
 
 func (r *OrderItemRepositoryImpl) InsertOrderItems(ctx context.Context, tx pgx.Tx, items []domain.OrderItem) error {
+	batch := &pgx.Batch{}
+
 	for _, item := range items {
-		_, err := tx.Exec(ctx,
-			`INSERT INTO order_items (order_id, product_name, quantity, price)
-			VALUES ($1, $2, $3, $4)`,
-			item.OrderID, item.ProductName, item.Quantity, item.Price,
-		)
-		if err != nil {
+		batch.Queue(`
+			INSERT INTO order_items (order_id, product_name, quantity, price)
+			VALUES ($1, $2, $3, $4)
+		`, item.OrderID, item.ProductName, item.Quantity, item.Price)
+	}
+
+	br := tx.SendBatch(ctx, batch)
+	defer br.Close()
+
+	for range items {
+		if _, err := br.Exec(); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
