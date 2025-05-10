@@ -22,7 +22,7 @@ func NewOrderHandler(orderUsecase usecase.OrderUsecase) OrderHandler {
 }
 
 func (oh *OrderHandlerImpl) GetOrders(c echo.Context) error {
-	var req dto.GetOrdersRequest
+	var req dto.GetOrdersRequestDTO
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid query params"})
 	}
@@ -57,7 +57,7 @@ func (oh *OrderHandlerImpl) GetOrderByID(c echo.Context) error {
 }
 
 func (oh *OrderHandlerImpl) CreateOrder(c echo.Context) error {
-	var createOrderRequest []dto.CreateOrderRequest
+	var createOrderRequest []dto.CreateOrderRequestDTO
 	if err := c.Bind(&createOrderRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
 	}
@@ -106,7 +106,7 @@ func (oh *OrderHandlerImpl) CreateOrder(c echo.Context) error {
 			}
 		}
 	}
-	summary := dto.OrderInsertSummary{}
+	summary := dto.OrderInsertSummaryDTO{}
 	for _, r := range results {
 		summary.Total++
 		if r.Error != "" {
@@ -125,7 +125,7 @@ func (oh *OrderHandlerImpl) CreateOrder(c echo.Context) error {
 
 	}
 
-	return c.JSON(status, dto.CreateOrderResponse{
+	return c.JSON(status, dto.CreateOrderResponseDTO{
 		Summary: summary,
 		Results: results,
 	})
@@ -138,7 +138,7 @@ func (oh *OrderHandlerImpl) UpdateOrderStatus(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid order ID"})
 	}
 
-	var req dto.UpdateOrderStatusRequest
+	var req dto.UpdateOrderStatusRequestDTO
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid input"})
 	}

@@ -1,12 +1,12 @@
 package dto
 
-type GetOrdersRequest struct {
+type GetOrdersRequestDTO struct {
 	Page     int    `query:"page" validate:"min=1"`
 	PageSize int    `query:"page_size" validate:"min=1,max=100"`
 	Sort     string `query:"sort"`
 }
 
-type CreateOrderRequest struct {
+type CreateOrderRequestDTO struct {
 	CustomerName string               `json:"customer_name" validate:"required"`
 	Status       string               `json:"status" validate:"required"`
 	Items        []CreateOrderItemDTO `json:"items" validate:"required,dive"`
@@ -18,12 +18,12 @@ type CreateOrderItemDTO struct {
 	Price       float64 `json:"price" validate:"required,gte=0"`
 }
 
-type CreateOrderResponse struct {
-	Summary OrderInsertSummary     `json:"summary"`
+type CreateOrderResponseDTO struct {
+	Summary OrderInsertSummaryDTO  `json:"summary"`
 	Results []OrderInsertResultDTO `json:"results"`
 }
 
-type OrderInsertSummary struct {
+type OrderInsertSummaryDTO struct {
 	Total   int `json:"total"`
 	Success int `json:"success"`
 	Failed  int `json:"failed"`
@@ -35,6 +35,6 @@ type OrderInsertResultDTO struct {
 	Error   string `json:"error,omitempty"`
 }
 
-type UpdateOrderStatusRequest struct {
+type UpdateOrderStatusRequestDTO struct {
 	Status string `json:"status" validate:"required,oneof=PENDING PAID SHIPPED CANCELED"`
 }
