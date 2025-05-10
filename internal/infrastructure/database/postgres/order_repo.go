@@ -22,12 +22,19 @@ func NewOrderRepository(db *pgxpool.Pool) repository.OrderRepository {
 	}
 }
 
-func (r *OrderRepositoryImpl) GetPaginated(ctx context.Context, page int, pageSize int, sort string) ([]domain.Order, error) {
+func (r *OrderRepositoryImpl) GetPaginated(ctx context.Context, page int, pageSize int, sort string) ([]domain.Order, int, error) {
 	if sort != "asc" && sort != "desc" {
 		sort = "desc"
 	}
 
 	offset := (page - 1) * pageSize
+
+	var totalItems int
+	err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM orders`).Scan(&totalItems)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	query := fmt.Sprintf(`
 		SELECT id, customer_name, status, total_amount, created_at, updated_at
 		FROM orders
@@ -37,7 +44,7 @@ func (r *OrderRepositoryImpl) GetPaginated(ctx context.Context, page int, pageSi
 
 	rows, err := r.db.Query(ctx, query, pageSize, offset)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -47,14 +54,14 @@ func (r *OrderRepositoryImpl) GetPaginated(ctx context.Context, page int, pageSi
 	for rows.Next() {
 		var o domain.Order
 		if err := rows.Scan(&o.ID, &o.CustomerName, &o.Status, &o.TotalAmount, &o.CreatedAt, &o.UpdatedAt); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		orderMap[o.ID] = &o
 		orderIDs = append(orderIDs, o.ID)
 	}
 
 	if len(orderIDs) == 0 {
-		return []domain.Order{}, nil
+		return []domain.Order{}, totalItems, nil
 	}
 
 	itemRows, err := r.db.Query(ctx, `
@@ -63,14 +70,14 @@ func (r *OrderRepositoryImpl) GetPaginated(ctx context.Context, page int, pageSi
 		WHERE order_id = ANY($1)
 	`, orderIDs)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer itemRows.Close()
 
 	for itemRows.Next() {
 		var item domain.OrderItem
 		if err := itemRows.Scan(&item.ID, &item.OrderID, &item.ProductName, &item.Quantity, &item.Price); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		if order, ok := orderMap[item.OrderID]; ok {
 			order.Items = append(order.Items, item)
@@ -82,7 +89,7 @@ func (r *OrderRepositoryImpl) GetPaginated(ctx context.Context, page int, pageSi
 		orders = append(orders, *orderMap[id])
 	}
 
-	return orders, nil
+	return orders, totalItems, nil
 }
 
 func (r *OrderRepositoryImpl) GetByID(ctx context.Context, id int64) (*domain.Order, error) {

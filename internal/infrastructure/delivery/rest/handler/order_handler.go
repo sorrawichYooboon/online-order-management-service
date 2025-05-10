@@ -52,13 +52,26 @@ func (oh *OrderHandlerImpl) GetOrders(c echo.Context) error {
 		req.Sort = "desc"
 	}
 
-	orders, err := oh.orderUsecase.GetOrders(c.Request().Context(), req.Page, req.PageSize, req.Sort)
+	orders, totalItems, err := oh.orderUsecase.GetOrders(c.Request().Context(), req.Page, req.PageSize, req.Sort)
 	if err != nil {
 		logger.LogError(ORDER_HANDLER_GET_ORDERS, err)
 		return response.Error(c, http.StatusInternalServerError, err)
 	}
 
-	return response.Success(c, http.StatusOK, response.SuccessOrderGetOrders, orders)
+	totalPages := (totalItems + req.PageSize - 1) / req.PageSize
+
+	res := dto.GetOrdersResponseDTO{
+		Summary: dto.GetOrdersSummaryDTO{
+			Page:              req.Page,
+			PageSize:          req.PageSize,
+			TotalOrdersOnPage: len(orders),
+			TotalItems:        totalItems,
+			TotalPages:        totalPages,
+		},
+		Orders: orders,
+	}
+
+	return response.Success(c, http.StatusOK, response.SuccessOrderGetOrders, res)
 }
 
 // GetOrderByID godoc

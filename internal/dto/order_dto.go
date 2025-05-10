@@ -1,9 +1,24 @@
 package dto
 
+import "github.com/sorrawichYooboon/online-order-management-service/internal/domain"
+
 type GetOrdersRequestDTO struct {
 	Page     int    `query:"page" validate:"min=1"`
 	PageSize int    `query:"page_size" validate:"min=1,max=100"`
 	Sort     string `query:"sort"`
+}
+
+type GetOrdersResponseDTO struct {
+	Summary GetOrdersSummaryDTO `json:"summary"`
+	Orders  []domain.Order      `json:"orders"`
+}
+
+type GetOrdersSummaryDTO struct {
+	Page              int `json:"page"`
+	PageSize          int `json:"page_size"`
+	TotalOrdersOnPage int `json:"total_orders_on_page"`
+	TotalItems        int `json:"total_items"`
+	TotalPages        int `json:"total_pages"`
 }
 
 type CreateOrderRequestDTO struct {
