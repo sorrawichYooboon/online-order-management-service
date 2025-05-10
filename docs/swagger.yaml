@@ -58,13 +58,9 @@ definitions:
         items:
           $ref: '#/definitions/dto.CreateOrderItemDTO'
         type: array
-      status:
-        example: PENDING
-        type: string
     required:
     - customer_name
     - items
-    - status
     type: object
   dto.CreateOrdersResponseDTO:
     properties:

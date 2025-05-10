@@ -8,7 +8,6 @@ type GetOrdersRequestDTO struct {
 
 type CreateOrderRequestDTO struct {
 	CustomerName string               `json:"customer_name" validate:"required" example:"Alice Smith"`
-	Status       string               `json:"status" validate:"required" example:"PENDING"`
 	Items        []CreateOrderItemDTO `json:"items" validate:"required,dive"`
 }
 

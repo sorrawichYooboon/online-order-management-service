@@ -86,6 +86,8 @@ func (u *OrderUsecaseImpl) CreateOrders(ctx context.Context, orders []domain.Ord
 					retry.IsTransientError,
 					func() error {
 						return u.pgTxManager.WithTx(localCtx, func(tx pgx.Tx) error {
+							order.Status = ORDER_STATUS_PENDING
+
 							var total float64
 							for _, item := range order.Items {
 								total += float64(item.Quantity) * item.Price

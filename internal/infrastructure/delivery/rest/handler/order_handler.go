@@ -124,7 +124,6 @@ func (oh *OrderHandlerImpl) CreateOrders(c echo.Context) error {
 
 		order := domain.Order{
 			CustomerName: orderRequest.CustomerName,
-			Status:       orderRequest.Status,
 			Items:        make([]domain.OrderItem, len(orderRequest.Items)),
 		}
 		for j, item := range orderRequest.Items {

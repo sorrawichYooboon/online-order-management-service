@@ -309,8 +309,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "customer_name",
-                "items",
-                "status"
+                "items"
             ],
             "properties": {
                 "customer_name": {
@@ -322,10 +321,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/dto.CreateOrderItemDTO"
                     }
-                },
-                "status": {
-                    "type": "string",
-                    "example": "PENDING"
                 }
             }
         },
