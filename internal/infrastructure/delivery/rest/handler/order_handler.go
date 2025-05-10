@@ -131,15 +131,15 @@ func (oh *OrderHandlerImpl) CreateOrders(c echo.Context) error {
 	}
 
 	status := http.StatusCreated
+	responseCode := response.SuccessOrderCreateOrders
 	if summary.Success == 0 {
-		status = http.StatusBadRequest
-
+		return response.Error(c, http.StatusBadRequest, &httperror.ErrBadRequest)
 	} else if summary.Failed > 0 {
 		status = http.StatusOK
-
+		responseCode = response.SuccessOrderCreateSomeOrders
 	}
 
-	return response.Success(c, status, response.SuccessOrderCreateOrders, dto.CreateOrdersResponseDTO{
+	return response.Success(c, status, responseCode, dto.CreateOrdersResponseDTO{
 		Summary: summary,
 		Results: results,
 	})
