@@ -52,7 +52,7 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.RequestID())
 	e.Use(middleware.Secure())
-	e.Use(middleware.BodyLimit("2M"))
+	e.Use(middleware.BodyLimit("5M"))
 	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
 		Timeout: 10 * time.Second,
 	}))
