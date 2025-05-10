@@ -2,9 +2,14 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/domain"
+)
+
+var (
+	ErrOrderNotFound = errors.New("order not found")
 )
 
 type OrderRepository interface {

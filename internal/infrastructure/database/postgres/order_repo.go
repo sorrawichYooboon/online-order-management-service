@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -93,6 +94,9 @@ func (r *OrderRepositoryImpl) GetByID(ctx context.Context, id int64) (*domain.Or
 
 	var o domain.Order
 	if err := row.Scan(&o.ID, &o.CustomerName, &o.Status, &o.TotalAmount, &o.CreatedAt, &o.UpdatedAt); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, repository.ErrOrderNotFound
+		}
 		return nil, err
 	}
 
@@ -140,9 +144,17 @@ func (r *OrderRepositoryImpl) InsertTx(ctx context.Context, tx pgx.Tx, order *do
 }
 
 func (r *OrderRepositoryImpl) UpdateStatusTx(ctx context.Context, tx pgx.Tx, orderID int64, status string) error {
-	_, err := tx.Exec(ctx, `
+	cmd, err := tx.Exec(ctx, `
 		UPDATE orders SET status = $1, updated_at = NOW()
 		WHERE id = $2
 	`, status, orderID)
-	return err
+	if err != nil {
+		return err
+	}
+
+	if cmd.RowsAffected() == 0 {
+		return repository.ErrOrderNotFound
+	}
+
+	return nil
 }

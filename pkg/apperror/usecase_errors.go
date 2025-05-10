@@ -10,6 +10,7 @@ func (e *UseCaseError) Error() string {
 }
 
 var (
-	ErrDatabase   = UseCaseError{Code: "ERROR_DATABASE", Message: "Database error"}
-	ErrUnexpected = UseCaseError{Code: "ERROR_UNEXPECTED", Message: "Unexpected error"}
+	ErrOrderNotFound = UseCaseError{Code: "ERROR_ORDER_NOT_FOUND", Message: "Order not found"}
+	ErrDatabase      = UseCaseError{Code: "ERROR_DATABASE", Message: "Database error"}
+	ErrUnexpected    = UseCaseError{Code: "ERROR_UNEXPECTED", Message: "Unexpected error"}
 )

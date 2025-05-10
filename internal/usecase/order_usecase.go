@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -48,6 +49,9 @@ func (u *OrderUsecaseImpl) GetOrders(ctx context.Context, page int, pageSize int
 func (u *OrderUsecaseImpl) GetOrderByID(ctx context.Context, id int64) (*domain.Order, error) {
 	order, err := u.orderRepo.GetByID(ctx, id)
 	if err != nil {
+		if errors.Is(err, repository.ErrOrderNotFound) {
+			return nil, &apperror.ErrOrderNotFound
+		}
 		logger.LogError(ORDER_USECASE_GET_ORDER_BY_ID, err)
 		return nil, &apperror.ErrDatabase
 	}
@@ -133,11 +137,14 @@ func (u *OrderUsecaseImpl) CreateOrders(ctx context.Context, orders []domain.Ord
 
 func (u *OrderUsecaseImpl) UpdateOrderStatus(ctx context.Context, orderID int64, status string) error {
 	return u.pgTxManager.WithTx(ctx, func(tx pgx.Tx) error {
-		if err := u.orderRepo.UpdateStatusTx(ctx, tx, orderID, status); err != nil {
+		err := u.orderRepo.UpdateStatusTx(ctx, tx, orderID, status)
+		if err != nil {
+			if errors.Is(err, repository.ErrOrderNotFound) {
+				return &apperror.ErrOrderNotFound
+			}
 			logger.LogError(ORDER_USECASE_UPDATE_ORDER, err)
 			return &apperror.ErrDatabase
 		}
-
 		return nil
 	})
 }

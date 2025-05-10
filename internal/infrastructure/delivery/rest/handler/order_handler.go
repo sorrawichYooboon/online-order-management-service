@@ -55,7 +55,7 @@ func (oh *OrderHandlerImpl) GetOrders(c echo.Context) error {
 	orders, err := oh.orderUsecase.GetOrders(c.Request().Context(), req.Page, req.PageSize, req.Sort)
 	if err != nil {
 		logger.LogError(ORDER_HANDLER_GET_ORDERS, err)
-		return response.Error(c, http.StatusInternalServerError, &httperror.ErrInternalServer)
+		return response.Error(c, http.StatusInternalServerError, err)
 	}
 
 	return response.Success(c, http.StatusOK, response.SuccessOrderGetOrders, orders)
@@ -83,7 +83,7 @@ func (oh *OrderHandlerImpl) GetOrderByID(c echo.Context) error {
 	order, err := oh.orderUsecase.GetOrderByID(c.Request().Context(), orderID)
 	if err != nil {
 		logger.LogError(ORDER_HANDLER_GET_ORDER_BY_ID, err)
-		return response.Error(c, http.StatusInternalServerError, &httperror.ErrInternalServer)
+		return response.Error(c, http.StatusInternalServerError, err)
 	}
 
 	return response.Success(c, http.StatusOK, response.SuccessOrderGetOrderByID, order)
@@ -210,9 +210,10 @@ func (oh *OrderHandlerImpl) UpdateOrderStatus(c echo.Context) error {
 		return response.Error(c, http.StatusBadRequest, &httperror.ErrBadRequest)
 	}
 
-	if err := oh.orderUsecase.UpdateOrderStatus(c.Request().Context(), orderID, req.Status); err != nil {
+	err = oh.orderUsecase.UpdateOrderStatus(c.Request().Context(), orderID, req.Status)
+	if err != nil {
 		logger.LogError(ORDER_HANDLER_UPDATE_ORDER_STATUS, err)
-		return response.Error(c, http.StatusInternalServerError, &httperror.ErrInternalServer)
+		return response.Error(c, http.StatusInternalServerError, err)
 	}
 
 	return response.Success(c, http.StatusOK, response.SuccessOrderUpdateStatus, nil)
