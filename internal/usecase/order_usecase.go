@@ -10,6 +10,7 @@ import (
 	"github.com/sorrawichYooboon/online-order-management-service/internal/repository"
 	"github.com/sorrawichYooboon/online-order-management-service/logger"
 	"github.com/sorrawichYooboon/online-order-management-service/pkg/apperror"
+	"github.com/sorrawichYooboon/online-order-management-service/pkg/retry"
 	"github.com/sorrawichYooboon/online-order-management-service/pkg/workers"
 )
 
@@ -78,29 +79,36 @@ func (u *OrderUsecaseImpl) CreateOrders(ctx context.Context, orders []domain.Ord
 				var result CreateOrdersResponse
 				result.Index = i
 
-				err := u.pgTxManager.WithTx(localCtx, func(tx pgx.Tx) error {
-					var total float64
-					for _, item := range order.Items {
-						total += float64(item.Quantity) * item.Price
-					}
-					order.TotalAmount = total
+				err := retry.RetryIf(
+					3,
+					100*time.Millisecond,
+					2*time.Second,
+					retry.IsTransientError,
+					func() error {
+						return u.pgTxManager.WithTx(localCtx, func(tx pgx.Tx) error {
+							var total float64
+							for _, item := range order.Items {
+								total += float64(item.Quantity) * item.Price
+							}
+							order.TotalAmount = total
 
-					orderID, err := u.orderRepo.InsertTx(localCtx, tx, &order)
-					if err != nil {
-						return err
-					}
+							orderID, err := u.orderRepo.InsertTx(localCtx, tx, &order)
+							if err != nil {
+								return err
+							}
 
-					for j := range order.Items {
-						order.Items[j].OrderID = orderID
-					}
+							for j := range order.Items {
+								order.Items[j].OrderID = orderID
+							}
 
-					if err := u.orderItemRepo.InsertBatchTx(localCtx, tx, order.Items); err != nil {
-						return err
-					}
+							if err := u.orderItemRepo.InsertBatchTx(localCtx, tx, order.Items); err != nil {
+								return err
+							}
 
-					result.OrderID = orderID
-					return nil
-				})
+							result.OrderID = orderID
+							return nil
+						})
+					})
 
 				if err != nil {
 					logger.LogError(ORDER_USECASE_CREATE_ORDER, err)
