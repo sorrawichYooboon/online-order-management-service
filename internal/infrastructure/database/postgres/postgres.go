@@ -21,10 +21,17 @@ func Connect(cfg *config.Config) *pgxpool.Pool {
 		cfg.PostgresSSLMode,
 	)
 
+	pgxConfig, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		log.Fatalf("Failed to parse pgx config: %v", err)
+	}
+
+	pgxConfig.MaxConns = int32(cfg.PostgresMaxConns)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	pool, err := pgxpool.New(ctx, dsn)
+	pool, err := pgxpool.NewWithConfig(ctx, pgxConfig)
 	if err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
 	}
