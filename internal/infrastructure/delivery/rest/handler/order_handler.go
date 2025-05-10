@@ -115,8 +115,8 @@ func (oh *OrderHandlerImpl) CreateOrders(c echo.Context) error {
 				Index:   originalIndex,
 				OrderID: r.OrderID,
 			}
-			if r.Error != "" {
-				results[originalIndex].Error = r.Error
+			if r.Error != nil {
+				results[originalIndex].Error = r.Error.Error()
 			}
 		}
 	}

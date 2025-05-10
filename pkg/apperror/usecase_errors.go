@@ -9,4 +9,7 @@ func (e *UseCaseError) Error() string {
 	return e.Message
 }
 
-var ()
+var (
+	ErrDatabase   = UseCaseError{Code: "ERROR_DATABASE", Message: "Database error"}
+	ErrUnexpected = UseCaseError{Code: "ERROR_UNEXPECTED", Message: "Unexpected error"}
+)
