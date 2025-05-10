@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/sorrawichYooboon/online-order-management-service/config"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/infrastructure/database/postgres"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/infrastructure/delivery/rest"
@@ -36,6 +37,15 @@ func main() {
 
 	e := echo.New()
 	e.Validator = validator.New()
+
+	e.Use(middleware.Recover())
+	e.Use(middleware.Logger())
+	e.Use(middleware.RequestID())
+	e.Use(middleware.Secure())
+	e.Use(middleware.BodyLimit("2M"))
+	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
+		Timeout: 10 * time.Second,
+	}))
 
 	pingHandler := handler.NewHealthHandler()
 
