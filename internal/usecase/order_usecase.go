@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/domain"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/repository"
+	"github.com/sorrawichYooboon/online-order-management-service/logger"
 	"github.com/sorrawichYooboon/online-order-management-service/pkg/workers"
 )
 
@@ -33,14 +34,26 @@ func NewOrderUsecase(
 }
 
 func (u *OrderUsecaseImpl) GetOrders(ctx context.Context, page int, pageSize int, sort string) ([]domain.Order, error) {
-	return u.orderRepo.GetPaginated(ctx, page, pageSize, sort)
+	orders, err := u.orderRepo.GetPaginated(ctx, page, pageSize, sort)
+	if err != nil {
+		logger.LogError(ORDER_USECASE_GET_ORDERS, err)
+		return nil, err
+	}
+
+	return orders, nil
 }
 
 func (u *OrderUsecaseImpl) GetOrderByID(ctx context.Context, id int64) (*domain.Order, error) {
-	return u.orderRepo.GetByID(ctx, id)
+	order, err := u.orderRepo.GetByID(ctx, id)
+	if err != nil {
+		logger.LogError(ORDER_USECASE_GET_ORDER_BY_ID, err)
+		return nil, err
+	}
+
+	return order, nil
 }
 
-func (u *OrderUsecaseImpl) CreateOrder(ctx context.Context, orders []domain.Order) ([]CreateOrderResponse, error) {
+func (u *OrderUsecaseImpl) CreateOrders(ctx context.Context, orders []domain.Order) ([]CreateOrderResponse, error) {
 	resultChan := make(chan CreateOrderResponse, len(orders))
 
 	for index, o := range orders {
@@ -89,6 +102,7 @@ func (u *OrderUsecaseImpl) CreateOrder(ctx context.Context, orders []domain.Orde
 				})
 
 				if err != nil {
+					logger.LogError(ORDER_USECASE_CREATE_ORDER, err)
 					result.Error = err.Error()
 				}
 
@@ -109,6 +123,7 @@ func (u *OrderUsecaseImpl) CreateOrder(ctx context.Context, orders []domain.Orde
 func (u *OrderUsecaseImpl) UpdateOrderStatus(ctx context.Context, orderID int64, status string) error {
 	return u.pgTxManager.WithTx(ctx, func(tx pgx.Tx) error {
 		if err := u.orderRepo.UpdateStatusTx(ctx, tx, orderID, status); err != nil {
+			logger.LogError(ORDER_USECASE_UPDATE_ORDER, err)
 			return err
 		}
 
