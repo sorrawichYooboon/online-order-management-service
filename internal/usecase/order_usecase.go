@@ -37,7 +37,13 @@ func NewOrderUsecase(
 }
 
 func (u *OrderUsecaseImpl) GetOrders(ctx context.Context, page int, pageSize int, sort string) ([]domain.Order, int, error) {
-	orders, total, err := u.orderRepo.GetPaginated(ctx, page, pageSize, sort)
+	total, err := u.orderRepo.CountOrders(ctx)
+	if err != nil {
+		logger.LogError(ORDER_USECASE_GET_ORDERS, err)
+		return nil, 0, &apperror.ErrDatabase
+	}
+
+	orders, err := u.orderRepo.GetPaginated(ctx, page, pageSize, sort)
 	if err != nil {
 		logger.LogError(ORDER_USECASE_GET_ORDERS, err)
 		return nil, 0, &apperror.ErrDatabase

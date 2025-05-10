@@ -63,7 +63,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/domain.Order"
+                                "$ref": "#/definitions/dto.GetOrdersResponseDTO"
                             }
                         }
                     },
@@ -214,7 +214,9 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -338,6 +340,40 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.GetOrdersResponseDTO": {
+            "type": "object",
+            "properties": {
+                "orders": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Order"
+                    }
+                },
+                "summary": {
+                    "$ref": "#/definitions/dto.GetOrdersSummaryDTO"
+                }
+            }
+        },
+        "dto.GetOrdersSummaryDTO": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total_items": {
+                    "type": "integer"
+                },
+                "total_orders_on_page": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.OrderInsertResultDTO": {
             "type": "object",
             "properties": {
@@ -390,6 +426,18 @@ const docTemplate = `{
                 "code": {
                     "type": "string"
                 },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.APIResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {},
                 "message": {
                     "type": "string"
                 }

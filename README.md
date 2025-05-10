@@ -62,10 +62,7 @@ The server will start on port <b>8080</b>.
 ## Swagger (API Documentation)
 
 You can access the Swagger documentation at:
-
-```
-http://localhost:8080/swagger/index.html
-```
+[http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 
 ## Project About
 

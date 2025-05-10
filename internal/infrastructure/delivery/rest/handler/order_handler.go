@@ -33,7 +33,7 @@ func NewOrderHandler(orderUsecase usecase.OrderUsecase) OrderHandler {
 // @Param page query int true "Page number" example(1)
 // @Param page_size query int true "Page size" example(10)
 // @Param sort query string false "Sort direction" Enums(asc, desc) example(desc)
-// @Success 200 {array} domain.Order
+// @Success 200 {array} dto.GetOrdersResponseDTO
 // @Failure 400 {object} httperror.HTTPError
 // @Failure 500 {object} httperror.HTTPError
 // @Router /orders [get]
@@ -201,7 +201,7 @@ func (oh *OrderHandlerImpl) CreateOrders(c echo.Context) error {
 // @Produce json
 // @Param order_id path int true "Order ID"
 // @Param request body dto.UpdateOrderStatusRequestDTO true "New order status (PENDING, PAID, SHIPPED, CANCELED)"
-// @Success 200 {object} interface{}
+// @Success 200 {object} response.APIResponse
 // @Failure 400 {object} httperror.HTTPError
 // @Failure 500 {object} httperror.HTTPError
 // @Router /orders/{order_id}/status [put]
