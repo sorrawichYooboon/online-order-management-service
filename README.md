@@ -14,7 +14,22 @@
 - Go (version 1.17 or higher)
 - Docker
 
-### 1. Run Docker Compose
+### 1. Create a `.env` file
+
+Create a `.env` file with the following content:
+
+```env
+APP_ENV=dev
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=oom_user_LQkR
+POSTGRES_PASSWORD=r9VYUDHXxRk
+POSTGRES_DBNAME=oom_db
+POSTGRES_SSLMODE=disable
+POSTGRES_MAX_CONNS=20
+```
+
+### 2. Run Docker Compose
 
 To set up the PostgreSQL and Redis services, run the following command:
 
@@ -22,7 +37,7 @@ To set up the PostgreSQL and Redis services, run the following command:
 docker-compose up -d
 ```
 
-### 2. Check Docker Compose Run Correctly
+### 3. Check Docker Compose Run Correctly
 
 ```base
 docker-compose ps
