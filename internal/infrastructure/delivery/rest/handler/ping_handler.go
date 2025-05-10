@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/sorrawichYooboon/online-order-management-service/pkg/response"
 )
 
 type HealthHandlerImpl struct {
@@ -14,5 +15,5 @@ func NewHealthHandler() HealthHandler {
 }
 
 func (h *HealthHandlerImpl) Ping(c echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]string{"message": "Pong~!"})
+	return response.Success(c, http.StatusOK, response.SuccessPing, nil)
 }
