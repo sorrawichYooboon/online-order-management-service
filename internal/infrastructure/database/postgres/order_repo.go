@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -29,9 +30,9 @@ func (r *OrderRepositoryImpl) GetPaginated(ctx context.Context, page int, pageSi
 	query := fmt.Sprintf(`
 		SELECT id, customer_name, status, total_amount, created_at, updated_at
 		FROM orders
-		ORDER BY created_at %s, id %s
+		ORDER BY id %s
 		LIMIT $1 OFFSET $2
-	`, sort, sort)
+	`, sort)
 
 	rows, err := r.db.Query(ctx, query, pageSize, offset)
 	if err != nil {
@@ -118,12 +119,24 @@ func (r *OrderRepositoryImpl) GetByID(ctx context.Context, id int64) (*domain.Or
 
 func (r *OrderRepositoryImpl) InsertTx(ctx context.Context, tx pgx.Tx, order *domain.Order) (int, error) {
 	var id int
+	var createdAt, updatedAt time.Time
+
 	err := tx.QueryRow(ctx,
 		`INSERT INTO orders (customer_name, total_amount, status, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-		order.CustomerName, order.TotalAmount, order.Status, order.CreatedAt, order.UpdatedAt,
-	).Scan(&id)
-	return id, err
+		VALUES ($1, $2, $3, NOW(), NOW())
+		RETURNING id, created_at, updated_at`,
+		order.CustomerName, order.TotalAmount, order.Status,
+	).Scan(&id, &createdAt, &updatedAt)
+
+	if err != nil {
+		return 0, err
+	}
+
+	order.ID = id
+	order.CreatedAt = createdAt
+	order.UpdatedAt = updatedAt
+
+	return id, nil
 }
 
 func (r *OrderRepositoryImpl) UpdateStatusTx(ctx context.Context, tx pgx.Tx, orderID int64, status string) error {

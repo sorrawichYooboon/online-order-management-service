@@ -60,9 +60,6 @@ func (u *OrderUsecaseImpl) CreateOrder(ctx context.Context, orders []domain.Orde
 				defer cancel()
 
 				err := u.pgTxManager.WithTx(localCtx, func(tx pgx.Tx) error {
-					order.CreatedAt = time.Now()
-					order.UpdatedAt = time.Now()
-
 					var total float64
 					for _, item := range order.Items {
 						total += float64(item.Quantity) * item.Price
