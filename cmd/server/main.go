@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sorrawichYooboon/online-order-management-service/config"
+	_ "github.com/sorrawichYooboon/online-order-management-service/docs"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/infrastructure/database/postgres"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/infrastructure/delivery/rest"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/infrastructure/delivery/rest/handler"
@@ -18,7 +19,14 @@ import (
 	"github.com/sorrawichYooboon/online-order-management-service/migrations"
 	"github.com/sorrawichYooboon/online-order-management-service/pkg/validator"
 	"github.com/sorrawichYooboon/online-order-management-service/pkg/workers"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
+
+// @title Online Order Management Service API
+// @version 1.0
+// @description KKP Interview - API for managing online orders and order items
+// @host localhost:8080
+// @BasePath /
 
 func main() {
 	cfg, err := config.LoadConfig()
@@ -37,6 +45,8 @@ func main() {
 
 	e := echo.New()
 	e.Validator = validator.New()
+
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())

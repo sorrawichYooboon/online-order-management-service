@@ -27,3 +27,6 @@ migrate-steps-up-one:
 
 migrate-steps-down-one:
 	go run cmd/migrate/main.go steps -1
+
+swagger:
+	swag init --generalInfo cmd/server/main.go --output docs

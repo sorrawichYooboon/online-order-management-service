@@ -7,15 +7,15 @@ type GetOrdersRequestDTO struct {
 }
 
 type CreateOrderRequestDTO struct {
-	CustomerName string               `json:"customer_name" validate:"required"`
-	Status       string               `json:"status" validate:"required"`
+	CustomerName string               `json:"customer_name" validate:"required" example:"Alice Smith"`
+	Status       string               `json:"status" validate:"required" example:"PENDING"`
 	Items        []CreateOrderItemDTO `json:"items" validate:"required,dive"`
 }
 
 type CreateOrderItemDTO struct {
-	ProductName string  `json:"product_name" validate:"required"`
-	Quantity    int     `json:"quantity" validate:"required,gt=0"`
-	Price       float64 `json:"price" validate:"required,gte=0"`
+	ProductName string  `json:"product_name" validate:"required" example:"Wireless Mouse"`
+	Quantity    int     `json:"quantity" validate:"required,gt=0" example:"2"`
+	Price       float64 `json:"price" validate:"required,gte=0" example:"19.99"`
 }
 
 type CreateOrdersResponseDTO struct {
@@ -36,5 +36,5 @@ type OrderInsertResultDTO struct {
 }
 
 type UpdateOrderStatusRequestDTO struct {
-	Status string `json:"status" validate:"required,oneof=PENDING PAID SHIPPED CANCELED"`
+	Status string `json:"status" validate:"required,oneof=PENDING PAID SHIPPED CANCELED" example:"PAID"`
 }

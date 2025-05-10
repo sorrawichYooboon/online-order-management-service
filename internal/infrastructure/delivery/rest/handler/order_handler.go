@@ -24,6 +24,19 @@ func NewOrderHandler(orderUsecase usecase.OrderUsecase) OrderHandler {
 	}
 }
 
+// GetOrders godoc
+// @Summary Get all orders with pagination
+// @Description Returns paginated list of orders with items
+// @Tags Orders
+// @Accept json
+// @Produce json
+// @Param page query int true "Page number" example(1)
+// @Param page_size query int true "Page size" example(10)
+// @Param sort query string false "Sort direction" Enums(asc, desc) example(desc)
+// @Success 200 {array} domain.Order
+// @Failure 400 {object} httperror.HTTPError
+// @Failure 500 {object} httperror.HTTPError
+// @Router /orders [get]
 func (oh *OrderHandlerImpl) GetOrders(c echo.Context) error {
 	var req dto.GetOrdersRequestDTO
 	if err := c.Bind(&req); err != nil {
@@ -48,6 +61,17 @@ func (oh *OrderHandlerImpl) GetOrders(c echo.Context) error {
 	return response.Success(c, http.StatusOK, response.SuccessOrderGetOrders, orders)
 }
 
+// GetOrderByID godoc
+// @Summary Get an order by ID
+// @Description Retrieves full order detail by its ID
+// @Tags Orders
+// @Accept json
+// @Produce json
+// @Param order_id path int true "Order ID" example(1)
+// @Success 200 {object} domain.Order
+// @Failure 400 {object} httperror.HTTPError
+// @Failure 500 {object} httperror.HTTPError
+// @Router /orders/{order_id} [get]
 func (oh *OrderHandlerImpl) GetOrderByID(c echo.Context) error {
 	idParam := c.Param("order_id")
 	orderID, err := strconv.ParseInt(idParam, 10, 64)
@@ -65,6 +89,18 @@ func (oh *OrderHandlerImpl) GetOrderByID(c echo.Context) error {
 	return response.Success(c, http.StatusOK, response.SuccessOrderGetOrderByID, order)
 }
 
+// CreateOrders godoc
+// @Summary Create multiple orders
+// @Description Create orders with multiple items concurrently and transactionally
+// @Tags Orders
+// @Accept json
+// @Produce json
+// @Param request body []dto.CreateOrderRequestDTO true "Order creation request"
+// @Success 201 {object} dto.CreateOrdersResponseDTO
+// @Success 200 {object} dto.CreateOrdersResponseDTO "Partial success"
+// @Failure 400 {object} httperror.HTTPError
+// @Failure 500 {object} httperror.HTTPError
+// @Router /orders [post]
 func (oh *OrderHandlerImpl) CreateOrders(c echo.Context) error {
 	var createOrderRequest []dto.CreateOrderRequestDTO
 	if err := c.Bind(&createOrderRequest); err != nil {
@@ -145,6 +181,18 @@ func (oh *OrderHandlerImpl) CreateOrders(c echo.Context) error {
 	})
 }
 
+// UpdateOrderStatus godoc
+// @Summary Update the status of an order
+// @Description Transactionally update order status by ID
+// @Tags Orders
+// @Accept json
+// @Produce json
+// @Param order_id path int true "Order ID"
+// @Param request body dto.UpdateOrderStatusRequestDTO true "New order status (PENDING, PAID, SHIPPED, CANCELED)"
+// @Success 200 {object} interface{}
+// @Failure 400 {object} httperror.HTTPError
+// @Failure 500 {object} httperror.HTTPError
+// @Router /orders/{order_id}/status [put]
 func (oh *OrderHandlerImpl) UpdateOrderStatus(c echo.Context) error {
 	orderIDParam := c.Param("order_id")
 	orderID, err := strconv.ParseInt(orderIDParam, 10, 64)
