@@ -30,6 +30,10 @@ func (oh *OrderHandlerImpl) GetOrders(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
 
+	if req.Sort != "asc" && req.Sort != "desc" {
+		req.Sort = "desc"
+	}
+
 	orders, err := oh.orderUsecase.GetOrders(c.Request().Context(), req.Page, req.PageSize, req.Sort)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to fetch orders"})
