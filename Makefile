@@ -1,6 +1,9 @@
 run-dev:
 	APP_ENV=dev go run cmd/server/main.go
 
+race-detector:
+	go run -race cmd/server/main.go
+
 generate-unix-timestamp:
 	date +%s
 
