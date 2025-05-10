@@ -18,6 +18,23 @@ type CreateOrderItemDTO struct {
 	Price       float64 `json:"price" validate:"required,gte=0"`
 }
 
+type CreateOrderResponse struct {
+	Summary OrderInsertSummary     `json:"summary"`
+	Results []OrderInsertResultDTO `json:"results"`
+}
+
+type OrderInsertSummary struct {
+	Total   int `json:"total"`
+	Success int `json:"success"`
+	Failed  int `json:"failed"`
+}
+
+type OrderInsertResultDTO struct {
+	Index   int    `json:"index"`
+	OrderID int    `json:"order_id,omitempty"`
+	Error   string `json:"error,omitempty"`
+}
+
 type UpdateOrderStatusRequest struct {
 	Status string `json:"status" validate:"required,oneof=PENDING PAID SHIPPED CANCELED"`
 }

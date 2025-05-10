@@ -62,33 +62,73 @@ func (oh *OrderHandlerImpl) CreateOrder(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
 	}
 
-	orders := make([]domain.Order, len(createOrderRequest))
-	for i, orderRequest := range createOrderRequest {
+	results := make([]dto.OrderInsertResultDTO, len(createOrderRequest))
+	validOrders := make([]domain.Order, 0, len(createOrderRequest))
+	validIndexes := make([]int, 0, len(createOrderRequest))
 
-		if err := c.Validate(createOrderRequest[i]); err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]string{
-				"error": fmt.Sprintf("validation failed on order %d: %v", i+1, err),
-			})
+	for i, orderRequest := range createOrderRequest {
+		if err := c.Validate(orderRequest); err != nil {
+			results[i] = dto.OrderInsertResultDTO{
+				Index: i,
+				Error: fmt.Sprintf("validation failed: %v", err),
+			}
+			continue
 		}
 
-		orders[i] = domain.Order{
+		order := domain.Order{
 			CustomerName: orderRequest.CustomerName,
 			Status:       orderRequest.Status,
 			Items:        make([]domain.OrderItem, len(orderRequest.Items)),
 		}
 		for j, item := range orderRequest.Items {
-			orders[i].Items[j] = domain.OrderItem{
+			order.Items[j] = domain.OrderItem{
 				ProductName: item.ProductName,
 				Quantity:    item.Quantity,
 				Price:       item.Price,
 			}
 		}
+
+		validOrders = append(validOrders, order)
+		validIndexes = append(validIndexes, i)
 	}
 
-	if err := oh.orderUsecase.CreateOrder(c.Request().Context(), orders); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create order"})
+	if len(validOrders) > 0 {
+		usecaseResults, _ := oh.orderUsecase.CreateOrder(c.Request().Context(), validOrders)
+
+		for j, r := range usecaseResults {
+			originalIndex := validIndexes[j]
+			results[originalIndex] = dto.OrderInsertResultDTO{
+				Index:   originalIndex,
+				OrderID: r.OrderID,
+			}
+			if r.Error != "" {
+				results[originalIndex].Error = r.Error
+			}
+		}
 	}
-	return c.JSON(http.StatusCreated, map[string]string{"message": "Order created successfully"})
+	summary := dto.OrderInsertSummary{}
+	for _, r := range results {
+		summary.Total++
+		if r.Error != "" {
+			summary.Failed++
+		} else {
+			summary.Success++
+		}
+	}
+
+	status := http.StatusCreated
+	if summary.Success == 0 {
+		status = http.StatusBadRequest
+
+	} else if summary.Failed > 0 {
+		status = http.StatusOK
+
+	}
+
+	return c.JSON(status, dto.CreateOrderResponse{
+		Summary: summary,
+		Results: results,
+	})
 }
 
 func (oh *OrderHandlerImpl) UpdateOrderStatus(c echo.Context) error {

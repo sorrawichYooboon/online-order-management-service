@@ -3,10 +3,8 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/jackc/pgx/v5"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/domain"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/repository"
@@ -42,22 +40,29 @@ func (u *OrderUsecaseImpl) GetOrderByID(ctx context.Context, id int64) (*domain.
 	return u.orderRepo.GetByID(ctx, id)
 }
 
-func (u *OrderUsecaseImpl) CreateOrder(ctx context.Context, orders []domain.Order) error {
-	var resultErr error
-	errChan := make(chan error, len(orders))
+func (u *OrderUsecaseImpl) CreateOrder(ctx context.Context, orders []domain.Order) ([]CreateOrderResponse, error) {
+	resultChan := make(chan CreateOrderResponse, len(orders))
 
-	for _, o := range orders {
+	for index, o := range orders {
 		order := o
+		i := index
+
 		u.workerPool.AddTask(workers.Task{
 			Execute: func() {
 				defer func() {
 					if r := recover(); r != nil {
-						errChan <- fmt.Errorf("panic: %v", r)
+						resultChan <- CreateOrderResponse{
+							Index: i,
+							Error: fmt.Sprintf("panic: %v", r),
+						}
 					}
 				}()
 
 				localCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				defer cancel()
+
+				var result CreateOrderResponse
+				result.Index = i
 
 				err := u.pgTxManager.WithTx(localCtx, func(tx pgx.Tx) error {
 					var total float64
@@ -71,26 +76,34 @@ func (u *OrderUsecaseImpl) CreateOrder(ctx context.Context, orders []domain.Orde
 						return err
 					}
 
-					for i := range order.Items {
-						order.Items[i].OrderID = orderID
+					for j := range order.Items {
+						order.Items[j].OrderID = orderID
 					}
 
-					return u.orderItemRepo.InsertBatchTx(localCtx, tx, order.Items)
+					if err := u.orderItemRepo.InsertBatchTx(localCtx, tx, order.Items); err != nil {
+						return err
+					}
+
+					result.OrderID = orderID
+					return nil
 				})
 
-				errChan <- err
+				if err != nil {
+					result.Error = err.Error()
+				}
+
+				resultChan <- result
 			},
 		})
 	}
 
+	results := make([]CreateOrderResponse, len(orders))
 	for range orders {
-		if err := <-errChan; err != nil {
-			resultErr = multierror.Append(resultErr, err)
-			log.Printf("Error processing order: %v", err)
-		}
+		r := <-resultChan
+		results[r.Index] = r
 	}
 
-	return resultErr
+	return results, nil
 }
 
 func (u *OrderUsecaseImpl) UpdateOrderStatus(ctx context.Context, orderID int64, status string) error {
