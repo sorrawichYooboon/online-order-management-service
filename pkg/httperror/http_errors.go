@@ -10,5 +10,11 @@ func (e *HTTPError) Error() string {
 }
 
 var (
-	ErrInternalServer = HTTPError{Code: "INTERNAL_ERROR", Message: "Internal server error"}
+	ErrBadRequest      = HTTPError{Code: "BAD_REQUEST", Message: "Invalid request"}
+	ErrUnauthorized    = HTTPError{Code: "UNAUTHORIZED", Message: "Unauthorized"}
+	ErrNotFound        = HTTPError{Code: "NOT_FOUND", Message: "Resource not found"}
+	ErrInternalServer  = HTTPError{Code: "INTERNAL_ERROR", Message: "Internal server error"}
+	ErrConflict        = HTTPError{Code: "CONFLICT", Message: "Conflict, resource exists"}
+	ErrInvalidRequest  = HTTPError{Code: "INVALID_REQUEST", Message: "Invalid request"}
+	ErrRateLimitExceed = HTTPError{Code: "RATE_LIMIT_EXCEED", Message: "Rate limit exceed"}
 )

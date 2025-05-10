@@ -1,6 +1,6 @@
 package usecase
 
-type CreateOrderResponse struct {
+type CreateOrdersResponse struct {
 	Index   int
 	OrderID int
 	Error   string

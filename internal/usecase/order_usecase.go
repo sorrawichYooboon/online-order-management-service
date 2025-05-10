@@ -53,8 +53,8 @@ func (u *OrderUsecaseImpl) GetOrderByID(ctx context.Context, id int64) (*domain.
 	return order, nil
 }
 
-func (u *OrderUsecaseImpl) CreateOrders(ctx context.Context, orders []domain.Order) ([]CreateOrderResponse, error) {
-	resultChan := make(chan CreateOrderResponse, len(orders))
+func (u *OrderUsecaseImpl) CreateOrders(ctx context.Context, orders []domain.Order) ([]CreateOrdersResponse, error) {
+	resultChan := make(chan CreateOrdersResponse, len(orders))
 
 	for index, o := range orders {
 		order := o
@@ -64,7 +64,7 @@ func (u *OrderUsecaseImpl) CreateOrders(ctx context.Context, orders []domain.Ord
 			Execute: func() {
 				defer func() {
 					if r := recover(); r != nil {
-						resultChan <- CreateOrderResponse{
+						resultChan <- CreateOrdersResponse{
 							Index: i,
 							Error: fmt.Sprintf("panic: %v", r),
 						}
@@ -74,7 +74,7 @@ func (u *OrderUsecaseImpl) CreateOrders(ctx context.Context, orders []domain.Ord
 				localCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				defer cancel()
 
-				var result CreateOrderResponse
+				var result CreateOrdersResponse
 				result.Index = i
 
 				err := u.pgTxManager.WithTx(localCtx, func(tx pgx.Tx) error {
@@ -111,7 +111,7 @@ func (u *OrderUsecaseImpl) CreateOrders(ctx context.Context, orders []domain.Ord
 		})
 	}
 
-	results := make([]CreateOrderResponse, len(orders))
+	results := make([]CreateOrdersResponse, len(orders))
 	for range orders {
 		r := <-resultChan
 		results[r.Index] = r

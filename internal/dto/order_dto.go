@@ -18,7 +18,7 @@ type CreateOrderItemDTO struct {
 	Price       float64 `json:"price" validate:"required,gte=0"`
 }
 
-type CreateOrderResponseDTO struct {
+type CreateOrdersResponseDTO struct {
 	Summary OrderInsertSummaryDTO  `json:"summary"`
 	Results []OrderInsertResultDTO `json:"results"`
 }

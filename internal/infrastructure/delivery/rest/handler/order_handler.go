@@ -10,6 +10,8 @@ import (
 	"github.com/sorrawichYooboon/online-order-management-service/internal/dto"
 	"github.com/sorrawichYooboon/online-order-management-service/internal/usecase"
 	"github.com/sorrawichYooboon/online-order-management-service/logger"
+	"github.com/sorrawichYooboon/online-order-management-service/pkg/httperror"
+	"github.com/sorrawichYooboon/online-order-management-service/pkg/response"
 )
 
 type OrderHandlerImpl struct {
@@ -26,11 +28,11 @@ func (oh *OrderHandlerImpl) GetOrders(c echo.Context) error {
 	var req dto.GetOrdersRequestDTO
 	if err := c.Bind(&req); err != nil {
 		logger.LogError(ORDER_HANDLER_GET_ORDERS, err)
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid query params"})
+		return response.Error(c, http.StatusBadRequest, &httperror.ErrBadRequest)
 	}
 	if err := c.Validate(req); err != nil {
 		logger.LogError(ORDER_HANDLER_GET_ORDERS, err)
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return response.Error(c, http.StatusBadRequest, &httperror.ErrBadRequest)
 	}
 
 	if req.Sort != "asc" && req.Sort != "desc" {
@@ -40,10 +42,10 @@ func (oh *OrderHandlerImpl) GetOrders(c echo.Context) error {
 	orders, err := oh.orderUsecase.GetOrders(c.Request().Context(), req.Page, req.PageSize, req.Sort)
 	if err != nil {
 		logger.LogError(ORDER_HANDLER_GET_ORDERS, err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to fetch orders"})
+		return response.Error(c, http.StatusInternalServerError, &httperror.ErrInternalServer)
 	}
 
-	return c.JSON(http.StatusOK, orders)
+	return response.Success(c, http.StatusOK, response.SuccessOrderGetOrders, orders)
 }
 
 func (oh *OrderHandlerImpl) GetOrderByID(c echo.Context) error {
@@ -51,23 +53,23 @@ func (oh *OrderHandlerImpl) GetOrderByID(c echo.Context) error {
 	orderID, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
 		logger.LogError(ORDER_HANDLER_GET_ORDER_BY_ID, err)
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid order ID"})
+		return response.Error(c, http.StatusBadRequest, &httperror.ErrBadRequest)
 	}
 
 	order, err := oh.orderUsecase.GetOrderByID(c.Request().Context(), orderID)
 	if err != nil {
 		logger.LogError(ORDER_HANDLER_GET_ORDER_BY_ID, err)
-		return c.JSON(http.StatusNotFound, map[string]string{"error": "Order not found"})
+		return response.Error(c, http.StatusInternalServerError, &httperror.ErrInternalServer)
 	}
 
-	return c.JSON(http.StatusOK, order)
+	return response.Success(c, http.StatusOK, response.SuccessOrderGetOrderByID, order)
 }
 
 func (oh *OrderHandlerImpl) CreateOrders(c echo.Context) error {
 	var createOrderRequest []dto.CreateOrderRequestDTO
 	if err := c.Bind(&createOrderRequest); err != nil {
-		logger.LogError(ORDER_HANDLER_CREATE_ORDER, err)
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
+		logger.LogError(ORDER_HANDLER_CREATE_ORDERS, err)
+		return response.Error(c, http.StatusBadRequest, &httperror.ErrBadRequest)
 	}
 
 	results := make([]dto.OrderInsertResultDTO, len(createOrderRequest))
@@ -76,7 +78,7 @@ func (oh *OrderHandlerImpl) CreateOrders(c echo.Context) error {
 
 	for i, orderRequest := range createOrderRequest {
 		if err := c.Validate(orderRequest); err != nil {
-			logger.LogError(ORDER_HANDLER_CREATE_ORDER, err)
+			logger.LogError(ORDER_HANDLER_CREATE_ORDERS, err)
 			results[i] = dto.OrderInsertResultDTO{
 				Index: i,
 				Error: fmt.Sprintf("validation failed: %v", err),
@@ -102,7 +104,10 @@ func (oh *OrderHandlerImpl) CreateOrders(c echo.Context) error {
 	}
 
 	if len(validOrders) > 0 {
-		usecaseResults, _ := oh.orderUsecase.CreateOrders(c.Request().Context(), validOrders)
+		usecaseResults, err := oh.orderUsecase.CreateOrders(c.Request().Context(), validOrders)
+		if err != nil {
+			logger.LogError(ORDER_HANDLER_CREATE_ORDERS, err)
+		}
 
 		for j, r := range usecaseResults {
 			originalIndex := validIndexes[j]
@@ -134,7 +139,7 @@ func (oh *OrderHandlerImpl) CreateOrders(c echo.Context) error {
 
 	}
 
-	return c.JSON(status, dto.CreateOrderResponseDTO{
+	return response.Success(c, status, response.SuccessOrderCreateOrders, dto.CreateOrdersResponseDTO{
 		Summary: summary,
 		Results: results,
 	})
@@ -145,23 +150,23 @@ func (oh *OrderHandlerImpl) UpdateOrderStatus(c echo.Context) error {
 	orderID, err := strconv.ParseInt(orderIDParam, 10, 64)
 	if err != nil {
 		logger.LogError(ORDER_HANDLER_UPDATE_ORDER_STATUS, err)
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid order ID"})
+		return response.Error(c, http.StatusBadRequest, &httperror.ErrBadRequest)
 	}
 
 	var req dto.UpdateOrderStatusRequestDTO
 	if err := c.Bind(&req); err != nil {
 		logger.LogError(ORDER_HANDLER_UPDATE_ORDER_STATUS, err)
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid input"})
+		return response.Error(c, http.StatusBadRequest, &httperror.ErrBadRequest)
 	}
 	if err := c.Validate(req); err != nil {
 		logger.LogError(ORDER_HANDLER_UPDATE_ORDER_STATUS, err)
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return response.Error(c, http.StatusBadRequest, &httperror.ErrBadRequest)
 	}
 
 	if err := oh.orderUsecase.UpdateOrderStatus(c.Request().Context(), orderID, req.Status); err != nil {
 		logger.LogError(ORDER_HANDLER_UPDATE_ORDER_STATUS, err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update order status"})
+		return response.Error(c, http.StatusInternalServerError, &httperror.ErrInternalServer)
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{"message": "Order status updated successfully"})
+	return response.Success(c, http.StatusOK, response.SuccessOrderUpdateStatus, nil)
 }
